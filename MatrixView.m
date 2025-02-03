@@ -130,6 +130,21 @@ NSOpenGLPixelFormat *pixformat;
    saverParams.framesPerLivingCellChange = 3;
    saverParams.minDepth = CLIP_NEAR;
    saverParams.spawnChance = 0.2;
+   
+   // Work around the API contract breakage introduced by Apple in macOS Sonoma
+   // https://www.jwz.org/blog/2023/10/xscreensaver-6-08-out-now/
+   if (@available(macOS 14, *)) {
+      if (!isPreview) {
+        [[NSDistributedNotificationCenter defaultCenter]
+            addObserverForName: @"com.apple.screensaver.willstop"
+                        object: nil
+                         queue: nil
+                    usingBlock:^(NSNotification *n) {
+            [[NSApplication sharedApplication] terminate: self];
+          }];
+      }
+   }
+   
    return self;
 }
 
